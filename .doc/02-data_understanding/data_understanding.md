@@ -87,3 +87,76 @@ To obtain the token that enables downloading, you must contact Sketchfab and ini
 a procedure at the end of which the token is transmitted.
 Due to time constraints, the current solution is to exclude solutions that involve
 downloading models in GLTF format and find a solution based on Web Scraping.
+
+### Available data using Sketchfab API
+Further investigation of Sketchfab `/v3/models/{uid}` API has allowed to retrieve
+all the features that can be retrieved from API itself. In particular:
+
+<div style="display: table; margin: auto;">
+
+| Feature                | JSON Source         | Notes                                                    |
+|------------------------|---------------------|----------------------------------------------------------|
+| UID                    | uid                 | Unique identifier of the model                           |
+| Model Name             | name                | Textual name                                             |
+| Published Date         | publishedAt         | ISO date                                                 |
+| Updated Date           | updatedAt           | ISO date                                                 |
+| Like Count             | likeCount           | Number of likes                                          |
+| Comment Count          | commentCount        | Number of comments                                       |
+| Is Downloadable        | isDownloadable      | Boolean, indicates if download is theoretically possible |
+| Is Age Restricted      | isAgeRestricted     | Boolean                                                  |
+| PBR Type               | pbrType             | Declared PBR type (can be empty string)                  |
+| Material Count         | materialCount       | Number of declared materials                             |
+| Texture Count          | textureCount        | Number of declared textures                              |
+| Vertex Count           | vertexCount         | Number of declared vertices (not triangles)              |
+| Animation Count        | animationCount      | Number of declared animations                            |
+| Sound Count            | soundCount          | Number of audio tracks                                   |
+| Face Count             | faceCount           | Number of faces, if available                            |
+| Tags                   | tags                | List of tags (slug or URI)                               |
+| User Info              | user                | Username, displayName, avatar, profile                   |
+| Categories             | categories          | Name, slug, UID                                          |
+| License                | license             | License type                                             |
+| Views                  | viewCount           | Number of views                                          |
+| Thumbnails             | thumbnails          | List of preview image URLs                               |
+| Embed URL / Viewer URL | embedUrl, viewerUrl | Direct link to the model embed/viewer                    |
+
+</div>
+
+This approach can help define a solution without adding extra complexity 
+(e.g., GLTF downloads or web scraping) while partially recovering some of
+the features identified in the original strategic plan. In particular:
+
+<div style="display: table; margin: auto;">
+
+| Old Feature           | New Feature       | Notes                                                                                                                                                                        |
+|-----------------------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -                     | uid               | Newly considered feature. Unique identifier of the model. Not planned initially.                                                                                             |
+| -                     | is age restricted | Newly considered feature. Boolean indicating if the model is age restricted. Not part of original planning.                                                                  |
+| -                     | pbr type          | Newly considered feature. Declared PBR type (can be empty string, providing no information). Not planned initially.                                                          |
+| -                     | texture count     | Newly considered feature. Number of declared textures. Not part of original planning.                                                                                        |
+| triangles             | face count        | Face count can approximate triangles since usually one face corresponds to two triangles in most workflows.                                                                  |
+| UV layers             | material count    | Material count can act as a substitute for UV layers. Originally UV layers were considered a measure of model texturing complexity; material count serves a similar purpose. |
+</div>
+
+The following recap consolidates the original strategic plan together with the new findings:
+
+<div style="display: table; margin: auto;">
+
+| Feature               | Retrievable via API? | Notes / Alternatives                                        |
+|-----------------------|----------------------|-------------------------------------------------------------|
+| uid                   | ✅                    | Newly added feature. Unique identifier of the model.        |
+| is age restricted     | ✅                    | Newly added feature. Boolean indicating age restriction.    |
+| pbr type              | ✅                    | Newly added feature. Can be empty string if not defined.    |
+| texture count         | ✅                    | Newly added feature. Number of declared textures.           |
+| vertices              | ✅                    |                                                             |
+| materials             | ✅                    |                                                             |
+| animations            | ✅                    |                                                             |
+| user tags             | ✅                    |                                                             |
+| user categories       | ✅                    |                                                             |
+| face count            | ✅                    | Substitutes triangles (approximation: 1 face ≈ 2 triangles) |
+| material count        | ✅                    | Substitutes UV layers (measure of texturing complexity)     |
+| vertex colors         | ❌                    | Not substituted, will not be considered for now             |
+| rigged geometries     | ❌                    | Not substituted, will not be considered for now             |
+| morph geometries      | ❌                    | Not substituted, will not be considered for now             |
+| scale transformations | ❌                    | Not substituted, will not be considered for now             |
+
+</div>
