@@ -90,7 +90,7 @@ with mlflow.start_run(run_name="Sketchfab_CC0_Data") as run:
     run_id = run.info.run_id
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    # create folder for this run
+    # Create folder for this run
     run_folder = os.path.join(BASE_DIR, f"{run_name}_{timestamp}")
     os.makedirs(run_folder, exist_ok=True)
 
