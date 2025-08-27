@@ -26,6 +26,18 @@ The current process of tagging 3D assets manually is time-consuming and prone to
 - Maintain resource efficiency on a VM with limited memory (1 GB, 700 MB available for the model).
 
 ## 3. Success Criteria
+**Section Description:**  
+This section defines the criteria by which the success of the project will be measured.  
+It distinguishes between functional, non-functional,
+and monitoring requirements, providing clear and measurable
+targets that guide development and validation.  
+
+**Objective:**  
+To ensure that both the system’s behavior (functional requirements)
+and its quality attributes (non-functional requirements) are clearly defined and measurable.  
+Additionally, to establish monitoring rules that guarantee 
+continuous performance over time.  
+
 **Functional Requirements:**  
 - Automatic assignment of tags to pushed FBX models (e.g., `lowpoly`, `prop`, `realistic-style`).  
 - Generate a list of tags even if some input data is missing.  
@@ -43,6 +55,17 @@ The current process of tagging 3D assets manually is time-consuming and prone to
 - Retrain the model if monitoring alerts indicate performance decay.
 
 ## 4. Constraints and Assumptions
+
+**Section Description:**  
+This section defines the boundaries and assumptions under
+which the system will be designed, trained, and deployed.  
+It clarifies the limitations of the current scope and the context
+in which the solution operates, ensuring that decisions are aligned with realistic conditions.  
+
+**Objective:**  
+To explicitly state the constraints and assumptions that guide the development process, preventing misunderstandings  
+and providing a clear reference for future iterations or extensions of the project. 
+
 - Only FBX file format is supported.  
 - No user interaction for tagging is required.  
 - No explicit security or availability SLAs are defined.  
@@ -51,12 +74,30 @@ The current process of tagging 3D assets manually is time-consuming and prone to
 - Model will be deployed with a CD GitHub Actions workflow.
 
 ## 5. Metrics for Evaluation
-| Metric                 | Target/Requirement                                |
-|------------------------|--------------------------------------------------|
-| F1-score               | ≥ 0.7 (sufficient/discrete accuracy)            |
-| Response time          | ≤ 5 seconds per model                             |
-| CPU & Memory usage     | Fit within VM constraints (≤ 700 MB RAM)        |
-| Tag coverage           | Assign at least some tags even if input is partial |
+
+**Section Description:**
+This section defines the quantitative and qualitative criteria
+used to evaluate the performance of the system.
+It explains the boundaries within which the solution
+must operate in order to be considered deployable and reliable.
+
+**Objective:**
+Provide clear and measurable targets that guide the monitoring, 
+validation, and decision-making process,
+ensuring that the deployed model consistently meets minimum quality standards.
+
+<div style="display: table; margin: auto;">
+
+| Metric             | Target/Requirement                                     |
+|--------------------|--------------------------------------------------------|
+| F1-score           | ≥ 0.7 (main deployment metric)                         |
+| Accuracy           | ≥ 0.8 (gives a general measure of overall correctness) |
+| Recall             | ≥ 0.65 (ensures relevant tags are not missed)          |
+| Response time      | ≤ 5 seconds for entire tagging operation               |
+| CPU & Memory usage | Fit within VM constraints (≤ 700 MB RAM)               |
+| Tag coverage       | Assign at least some tags even if input is partial     |
+
+</div>
 
 ## 6. Notes
 - The system must integrate with Dddit’s push workflow.  
