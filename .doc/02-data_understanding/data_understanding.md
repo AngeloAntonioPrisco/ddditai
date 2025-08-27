@@ -160,3 +160,45 @@ The following recap consolidates the original strategic plan together with the n
 | scale transformations | ❌                    | Not substituted, will not be considered for now             |
 
 </div>
+
+## 3. Final Strategy
+
+**Section Description:**
+This section outlines the final plan for collecting and understanding the data.
+It represents the intended strategy before performing actual data retrieval,
+taking into account all insights documented in the Findings / Discoveries section.
+If new findings emerge, this section may be updated accordingly. 
+Each update should be committed (push) to maintain a clear history of the evolution 
+of the chosen methodology throughout the data retrieval process.
+
+**Objective:**
+Define the final methodology and describe the dataset to be retrieved, consolidating the approach that will guide the data collection process.
+
+**Planned Data Sources:**  
+- Sketchfab API v3 (`/v3/models` and `/v3/models/{uid}`)  
+- Retrieval automated (no manual UID insertion)  
+- Multithreading to speed up collection  
+
+**Metadata to Extract:**  
+
+<div style="display: table; margin: auto;">
+
+| Feature           | Description                                                      |
+|-------------------|------------------------------------------------------------------|
+| uid               | Unique identifier of the model.                                  |
+| is age restricted | Boolean indicating if the model has age restriction.             |
+| pbr type          | Declared PBR type, can be an empty string if not defined.        |
+| texture count     | Number of declared textures.                                     |
+| vertices          | Number of declared vertices of the model.                        |
+| materials         | Number of declared materials of the model.                       |
+| animations        | Number of declared animations associated with the model.         |
+| user tags         | List of user-defined tags attached to the model.                 |
+| user categories   | Categories assigned to the model.                                |
+| face count        | Number of declared faces. Considered a substitute for triangles. |
+| material count    | Number of declared materials in the model.                       |
+
+</div>
+
+**Storage Plan:**  
+- Data to be logged and versioned in MLflow  
+- Exportable to CSV for offline analysis
