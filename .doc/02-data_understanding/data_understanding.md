@@ -207,6 +207,9 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Section Description:**  
 This section describes the initial exploration of the dataset retrieved during the data understanding phase.  
 It highlights patterns, distributions, and potential correlations in the data, with the goal of identifying anomalies, missing values, or relationships that can guide preprocessing and imputation strategies.
+If new findings emerge, this section may be updated accordingly. 
+Each update should be committed (push) to maintain a clear history of the evolution 
+of the chosen studies to perform.
 
 **Objective:**  
 - Compute standard descriptive statistics for numerical features (mean, median, std, min, max, quartiles).  
@@ -219,3 +222,30 @@ It highlights patterns, distributions, and potential correlations in the data, w
 This is necessary because many CC0 models are created via photogrammetry, resulting in very high face counts that are not representative of the target models expected to be pushed to Dddit.
 
 - Provide insights for handling missing or empty fields (e.g., empty `pbr type`) and guide potential data imputation based on correlated features.
+
+## 5. Result
+
+**Section Description:**  
+This section describes the initial exploration of the dataset retrieved during the data understanding phase.  
+It highlights patterns, distributions, and potential correlations in the data, with the goal of identifying anomalies, missing values, or relationships that can guide preprocessing and imputation strategies.
+If new results are obtained, this section may be updated accordingly. 
+Each update should be committed (push) to maintain a clear history of the results obtained
+in relation of the methodologies and studies defined in other sections.
+
+**Objective:**
+Track results of data exploration process and take notes of relevant information
+to improve data exploration process.
+
+During the first logged run, with run id `219847ffcbb14d95a1121f14ec859be9` 
+some relevant information emerged. In particular the number of models with 
+a face count over 200,000 is 113 and most of them report user tags and names, 
+which confirm the hypothesis that a considerable number of CC0-licensed 
+models are produced using photogrammetry.
+
+Other than this, some problems emerged with `pbr type` and `texture count` features.
+In particular, they are the only features to showing missing values,
+449 missing values for `pbr type` and 61 missing values for `texture count`,
+making any further evaluation, like correlation studies.
+
+At this point the decision is to modify the number of total models extracted from 500 to
+2500, to verify the problems discovered.
