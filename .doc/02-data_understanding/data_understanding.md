@@ -190,7 +190,6 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 | pbr type          | Declared PBR type, can be an empty string if not defined.        |
 | texture count     | Number of declared textures.                                     |
 | vertices          | Number of declared vertices of the model.                        |
-| materials         | Number of declared materials of the model.                       |
 | animations        | Number of declared animations associated with the model.         |
 | user tags         | List of user-defined tags attached to the model.                 |
 | user categories   | Categories assigned to the model.                                |
@@ -202,3 +201,21 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Storage Plan:**  
 - Data to be logged and versioned in MLflow  
 - Exportable to CSV for offline analysis
+
+## 4. Data Exploration
+
+**Section Description:**  
+This section describes the initial exploration of the dataset retrieved during the data understanding phase.  
+It highlights patterns, distributions, and potential correlations in the data, with the goal of identifying anomalies, missing values, or relationships that can guide preprocessing and imputation strategies.
+
+**Objective:**  
+- Compute standard descriptive statistics for numerical features (mean, median, std, min, max, quartiles).  
+- Visualize distributions of numerical and boolean features using histograms.  
+- Analyze correlations between key features to identify potential imputation strategies:  
+  - `pbr type` vs `materials`  
+  - `pbr type` vs `face count`  
+  - `is age restricted` vs `animations`  
+- Detect and quantify extreme values, e.g., number of models with `face count` > 200,000.
+This is necessary because many CC0 models are created via photogrammetry, resulting in very high face counts that are not representative of the target models expected to be pushed to Dddit.
+
+- Provide insights for handling missing or empty fields (e.g., empty `pbr type`) and guide potential data imputation based on correlated features.
