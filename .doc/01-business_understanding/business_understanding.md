@@ -47,6 +47,8 @@ The current process of tagging 3D assets manually is time-consuming and prone to
 - No user interaction for tagging is required.  
 - No explicit security or availability SLAs are defined.  
 - Model training will occur locally; MLflow will be used to track datasets, experiments, and metrics.
+- Model will be evaluated with a CI GitHub Actions workflow.
+- Model will be deployed with a CD GitHub Actions workflow.
 
 ## 5. Metrics for Evaluation
 | Metric                 | Target/Requirement                                |
@@ -58,6 +60,6 @@ The current process of tagging 3D assets manually is time-consuming and prone to
 
 ## 6. Notes
 - The system must integrate with Dddit’s push workflow.  
-- Tags include model complexity (`lowpoly`, `highpoly`) and type (`prop`, `character`, `environment`, `weapon`, etc.).  
+- Tags include model complexity (`lowpoly`, `highpoly`), type (`prop`, `character`, `environment`, `weapon`) and style (`realistic-style`, `stylized`).  
 - MLflow will track datasets, experiments, and model versions for reproducibility.  
 - Deployment is conditional on meeting performance metrics tracked in MLflow.
