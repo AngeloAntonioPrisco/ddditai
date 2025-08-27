@@ -79,3 +79,11 @@ in the original strategic plan. In particular:
 An alternative method for retrieving missing features can be: 
 - **Web Scraping:** parse HTML of model pages to extract features not exposed by the API  
 - **Temporary GLTF Download:** load models in RAM only for feature extraction, using multithreading
+
+### Unavailable temporary GLTF download
+During the study of Sketchfab download API turned out that `/v3/models/{uid}/download` API requires
+an additional authorization token in addition to the one obtained when registering a Sketchfab account.
+To obtain the token that enables downloading, you must contact Sketchfab and initiate
+a procedure at the end of which the token is transmitted.
+Due to time constraints, the current solution is to exclude solutions that involve
+downloading models in GLTF format and find a solution based on Web Scraping.
