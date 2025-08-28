@@ -72,7 +72,7 @@ and providing a clear reference for future iterations or extensions of the proje
 - Model training will occur locally; MLflow will be used to track datasets, experiments, and metrics.
 - Model will be evaluated with a CI GitHub Actions workflow.
 - Model will be deployed with a CD GitHub Actions workflow.
-- All models' author must be credited if models under CC-BY license are used
+- All models' author must be credited if models under CC-BY license are used.
 
 ## 5. Metrics for Evaluation
 
