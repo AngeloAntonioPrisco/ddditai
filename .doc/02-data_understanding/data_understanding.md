@@ -185,7 +185,8 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Planned Data Sources:**  
 - Sketchfab API v3 (`/v3/models` and `/v3/models/{uid}`)  
 - Retrieval automated (no manual UID insertion)  
-- Multithreading to speed up collection  
+- Multithreading to speed up collection
+- List of tag to perform an informed data retrieving
 
 **Metadata to Extract:**  
 
@@ -209,6 +210,7 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Storage Plan:**  
 - Data to be logged and versioned in MLflow  
 - Exportable to CSV for offline analysis
+- Credits to models' author to be logged and versioned in MLflow  
 
 ## 4. Data Exploration
 
@@ -243,17 +245,3 @@ in relation of the methodologies and studies defined in other sections.
 **Objective:**
 Track results of data exploration process and take notes of relevant information
 to improve data exploration process.
-
-During the first logged run, with run id `219847ffcbb14d95a1121f14ec859be9` 
-some relevant information emerged. In particular the number of models with 
-a face count over 200,000 is 113 and most of them report user tags and names, 
-which confirm the hypothesis that a considerable number of CC0-licensed 
-models are produced using photogrammetry.
-
-Other than this, some problems emerged with `pbr type` and `texture count` features.
-In particular, they are the only features to showing missing values,
-449 missing values for `pbr type` and 61 missing values for `texture count`,
-making any further evaluation, like correlation studies.
-
-At this point the decision is to modify the number of total models extracted from 500 to
-2500, to verify the problems discovered.
