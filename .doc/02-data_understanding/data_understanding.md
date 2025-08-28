@@ -161,6 +161,14 @@ The following recap consolidates the original strategic plan together with the n
 
 </div>
 
+### Limits and quotas
+
+From usage of Sketchfab `/v3/models` API emerged that calls to the API can be throttled to limit abuse.
+When an application is being throttled, it will receive a `429 Too Many Requests response`.
+This means that workflow result interrupted and must wait before making more requests.
+This implies updating the process to implement a backoff strategy that retries
+requests using an exponential backoff, up to a maximum delay of 1 hour.
+
 ## 3. Final Strategy
 
 **Section Description:**
