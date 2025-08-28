@@ -195,26 +195,28 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Planned Data Sources:**  
 - Sketchfab API v3 (`/v3/models` and `/v3/models/{uid}`)  
 - Retrieval automated (no manual UID insertion)  
-- Multithreading to accelerate data collection,
-with pause intervals and an exponential backoff algorithm to avoid hitting request limits 
+- Multithreading is used to accelerate data collection,
+with pause intervals and an exponential backoff algorithm to avoid hitting request limits.
+Each thread is associated with a list of tags it is responsible for retrieving, as well as a distinct token for making requests, 
 - List of tag to perform an informed data retrieving
 
 **Metadata to Extract:**  
 
 <div style="display: table; margin: auto;">
 
-| Feature           | Description                                                      |
-|-------------------|------------------------------------------------------------------|
-| uid               | Unique identifier of the model.                                  |
-| is age restricted | Boolean indicating if the model has age restriction.             |
-| pbr type          | Declared PBR type, can be an empty string if not defined.        |
-| texture count     | Number of declared textures.                                     |
-| vertices          | Number of declared vertices of the model.                        |
-| animations        | Number of declared animations associated with the model.         |
-| user tags         | List of user-defined tags attached to the model.                 |
-| user categories   | Categories assigned to the model.                                |
-| face count        | Number of declared faces. Considered a substitute for triangles. |
-| material count    | Number of declared materials in the model.                       |
+| Feature           | Description                                                             |
+|-------------------|-------------------------------------------------------------------------|
+| uid               | Unique identifier of the model.                                         |
+| associated_tag    | The tag assigned to the thread responsible for retrieving related data. |
+| is age restricted | Boolean indicating if the model has age restriction.                    |
+| pbr type          | Declared PBR type, can be an empty string if not defined.               |
+| texture count     | Number of declared textures.                                            |
+| vertices          | Number of declared vertices of the model.                               |
+| animations        | Number of declared animations associated with the model.                |
+| user tags         | List of user-defined tags attached to the model.                        |
+| user categories   | Categories assigned to the model.                                       |
+| face count        | Number of declared faces. Considered a substitute for triangles.        |
+| material count    | Number of declared materials in the model.                              |
 
 </div>
 
@@ -233,15 +235,15 @@ Each update should be committed (push) to maintain a clear history of the evolut
 of the chosen studies to perform.
 
 **Objective:**  
-- Compute standard descriptive statistics for numerical features (mean, median, std, min, max, quartiles).  
+- Compute standard descriptive statistics for numerical features (mean, median, std, min, max, quartiles).
+- Visualize box plots for each feature and using them to define how many outliers characterize the dataset.
 - Visualize distributions of numerical and boolean features using histograms.  
-- Analyze correlations between key features to identify potential imputation strategies:  
-  - `pbr type` vs `materials`  
-  - `pbr type` vs `face count`  
-  - `is age restricted` vs `animations`  
+- Analyze correlations between all features in relation to `associated_tag` feature. 
+- Analyze correlations between all following pair of features: 
+  - `material count` vs `pbr type`  
+  - `texture count` vs `pbr type`
 - Detect and quantify extreme values, e.g., number of models with `face count` > 200,000.
 This is necessary because many CC0 models are created via photogrammetry, resulting in very high face counts that are not representative of the target models expected to be pushed to Dddit.
-
 - Provide insights for handling missing or empty fields (e.g., empty `pbr type`) and guide potential data imputation based on correlated features.
 
 ## 5. Result
