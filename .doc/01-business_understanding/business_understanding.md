@@ -45,7 +45,7 @@ continuous performance over time.
 
 **Non-Functional Requirements:**  
 - Fast response time: a few seconds per model (≤ 5 seconds recommended).  
-- Accuracy: sufficient/discrete tagging quality (F1-score ≥ 0.7 suggested).  
+- Accuracy: sufficient/discrete tagging quality (F1-score ≥ 0.7 suggested, Accuracy ≥ 0.8 suggested and Recall ≥ 0.65 suggested).  
 - Resource constraints: model must run within 700 MB RAM.  
 
 **Monitoring Requirements:**  
@@ -72,6 +72,7 @@ and providing a clear reference for future iterations or extensions of the proje
 - Model training will occur locally; MLflow will be used to track datasets, experiments, and metrics.
 - Model will be evaluated with a CI GitHub Actions workflow.
 - Model will be deployed with a CD GitHub Actions workflow.
+- All models' author must be credited if models under CC-BY license are used
 
 ## 5. Metrics for Evaluation
 
