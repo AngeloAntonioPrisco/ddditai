@@ -1,11 +1,15 @@
 import os
 import time
+from pathlib import Path
+
 import requests
 import mlflow
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from azure.storage.blob import BlobServiceClient
+
+from ddditai.data.b_data_analysis.data_analysis import analyze_mlflow_run
 
 # --- CONFIGURATION ---
 API_BASE = "https://api.sketchfab.com/v3"
@@ -24,7 +28,11 @@ PAUSE_DURATION = 90  # seconds
 
 SEARCH_TAGS = ["lowpoly", "highpoly", "prop", "character", "environment", "weapon", "realistic", "stylized"]
 
-BASE_DIR = "data_extraction"
+# ATTENTION: at the moment mlflow run locally, if moved on a VM or external server make sure to change the path
+local_appdata = Path(os.environ['LOCALAPPDATA'])
+data_folder = local_appdata / "MLflow" / "data_extraction"
+data_folder.mkdir(parents=True, exist_ok=True)
+BASE_DIR = data_folder
 
 os.makedirs(BASE_DIR, exist_ok=True)
 
@@ -164,8 +172,13 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
     csv_path = os.path.join(run_folder, "sketchfab_models.csv")
     txt_path = os.path.join(run_folder, "sketchfab_authors.txt")
 
+    mlflow.log_artifact("tags", str(SEARCH_TAGS))
     mlflow.log_param("total_models_per_tag", TOTAL_MODELS_PER_TAG)
     mlflow.log_param("batch_size", BATCH_SIZE)
+    mlflow.log_param("max_workers", MAX_WORKERS)
+    mlflow.log_param("batch_size", PAUSE_BETWEEN_REQUESTS)
+    mlflow.log_param("max_workers", PAUSE_DURATION)
+    mlflow.log_param("batch_size", PAUSE_DURATION)
 
     # Tags association for thread
     thread_tag_chunks = [SEARCH_TAGS[i::MAX_WORKERS] for i in range(MAX_WORKERS)]
@@ -213,3 +226,5 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
             print(f"[{now()}] CSV and TXT uploaded to '{AZURE_CONTAINER_NAME}' Azure container")
         except Exception as e:
             print(f"[{now()}] Error during Azure uploading : {e}")
+
+analyze_mlflow_run(run_id, "sketchfab_models.csv")
