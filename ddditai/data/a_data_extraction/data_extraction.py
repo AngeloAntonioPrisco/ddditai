@@ -1,20 +1,18 @@
 import os
 import time
-from pathlib import Path
-
 import requests
 import mlflow
 import pandas as pd
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from azure.storage.blob import BlobServiceClient
-
 from ddditai.data.b_data_analysis.data_analysis import analyze_mlflow_run
 
 # --- CONFIGURATION ---
 API_BASE = "https://api.sketchfab.com/v3"
 
-TOTAL_MODELS_PER_TAG = 512
+TOTAL_MODELS_PER_TAG = 16
 
 BATCH_SIZE = 16
 
@@ -166,19 +164,20 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
     run_name = run.info.run_name
     run_id = run.info.run_id
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp_start = datetime.now()
     run_folder = os.path.join(BASE_DIR, f"{run_name}_{timestamp}")
     os.makedirs(run_folder, exist_ok=True)
 
     csv_path = os.path.join(run_folder, "sketchfab_models.csv")
     txt_path = os.path.join(run_folder, "sketchfab_authors.txt")
 
-    mlflow.log_artifact("tags", str(SEARCH_TAGS))
+    mlflow.log_param("tags", str(SEARCH_TAGS))
     mlflow.log_param("total_models_per_tag", TOTAL_MODELS_PER_TAG)
     mlflow.log_param("batch_size", BATCH_SIZE)
     mlflow.log_param("max_workers", MAX_WORKERS)
-    mlflow.log_param("batch_size", PAUSE_BETWEEN_REQUESTS)
-    mlflow.log_param("max_workers", PAUSE_DURATION)
-    mlflow.log_param("batch_size", PAUSE_DURATION)
+    mlflow.log_param("pause_between_requests", PAUSE_BETWEEN_REQUESTS)
+    mlflow.log_param("pause_every_n_requests", PAUSE_EVERY_N_REQUESTS)
+    mlflow.log_param("pause_duration", PAUSE_DURATION)
 
     # Tags association for thread
     thread_tag_chunks = [SEARCH_TAGS[i::MAX_WORKERS] for i in range(MAX_WORKERS)]
@@ -209,6 +208,15 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
     ])
     df.to_csv(csv_path, index=False)
     mlflow.log_artifact(csv_path, artifact_path="sketchfab_models.csv")
+
+    timestamp_end = datetime.now()
+    delta = timestamp_end - timestamp_start
+    total_seconds = int(delta.total_seconds())
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+
+    mlflow.log_param("total_duration", f"{hours}h {minutes}m {seconds}s")
 
     # Upload on Azure Blob Storage
     if AZURE_CONNECTION_STRING:
