@@ -169,6 +169,16 @@ This means that workflow result interrupted and must wait before making more req
 This implies updating the process to implement a backoff strategy that retries
 requests using an exponential backoff, up to a maximum delay of 1 hour.
 
+From further studies on these limits, it emerged that Sketchfab does not use any 
+headers to indicate a recommended retry time.
+In other, the limits do not seem to be related to IP addresses but rather to the token.
+To avoid such issues, a possible solution is to use multiple tokens, one per thread, and longer
+pause periods.
+In particular, it seems reasonable to wait a fixed time, such as 90 seconds,
+after a batch of requests (e.g., 32 requests), and to pause for one or two seconds between
+consecutive requests. Using four threads and 256 models per tag with 8 tags,
+this process would take approximately 10 minutes.
+
 ## 3. Final Strategy
 
 **Section Description:**
@@ -185,7 +195,8 @@ Define the final methodology and describe the dataset to be retrieved, consolida
 **Planned Data Sources:**  
 - Sketchfab API v3 (`/v3/models` and `/v3/models/{uid}`)  
 - Retrieval automated (no manual UID insertion)  
-- Multithreading to speed up collection
+- Multithreading to accelerate data collection,
+with pause intervals and an exponential backoff algorithm to avoid hitting request limits 
 - List of tag to perform an informed data retrieving
 
 **Metadata to Extract:**  
