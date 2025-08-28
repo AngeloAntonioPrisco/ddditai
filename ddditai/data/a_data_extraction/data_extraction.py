@@ -92,7 +92,7 @@ def fetch_model_data(uid, token, thread_name="Thread"):
         tags = ["realistic-style" if t == "realistic" else t for t in tags]
         model_info = [
             uid,
-            "",  # placeholder tag, inserito dopo
+            "",  # placeholder tag, will be populated after
             data.get("isAgeRestricted", False),
             data.get("pbrType", ""),
             data.get("textureCount", 0),
