@@ -258,3 +258,28 @@ in relation of the methodologies and studies defined in other sections.
 **Objective:**
 Track results of data exploration process and take notes of relevant information
 to improve data exploration process.
+
+The data analysis of the MLflow run `ca8067b0d2bb4cbdb7a947090eb377fe` reveals several key insights regarding feature distributions, correlations, and data quality.
+The features `uid`, `pbr_type`, `texture_count`, `vertex_count`, `material_count`, `animation_count`, `user_tags`, `user_categories`,
+and `face_count` all show statistically significant associations with `associated_tag`, while `is_age_restricted` does not.
+These significant features could serve as potential predictors.
+
+Outlier analysis indicates that `material_count` (138), `vertex_count` (117), `face_count` (122), `texture_count` (92), and `animation_count` (55)
+contain substantial outliers, with `vertex_count` and `face_count` displaying extreme values far from the mean and median.
+
+In other, `texture_count` and `material_count` have skewed distributions, with mean values higher than the median, while 
+`animation_count` and `is_age_restricted` are almost constant.  
+
+In terms of missing data, `pbr_type` is missing in approximately 77% of records and `texture_count` is missing in about 43% of records. All other columns are complete.  
+
+Instead, in terms of extreme values, 90 models (~9%) have `face_count` greater than 200,000,
+likely representing photogrammetry-derived models that are not representative of the expected target.
+
+In addition, the ANOVA results show that `texture_count` does not vary significantly with `pbr_type` (p ≈ 0.092),
+meaning it provides limited information about the `pbr_type` and cannot reliably substitute it.
+In contrast, `material_count` is significantly associated with `pbr_type` (p ≈ 0.013),
+suggesting it could serve as a potential proxy when `pbr_type` is missing, as it carries relevant information about the same property.
+
+At the end, the most informative features for predicting `associated_tag` are `pbr_type` (if imputed),
+`texture_count`, `vertex_count`, `material_count`, `face_count`, `user_tags`, and `user_categories`.
+Careful handling of extreme values, missing data, and skewed distributions is necessary for robust modeling.
