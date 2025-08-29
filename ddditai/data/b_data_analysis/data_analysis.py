@@ -31,7 +31,7 @@ artifact_base_folder = local_appdata / "MLflow" / "artifacts"
 artifact_base_folder.mkdir(parents=True, exist_ok=True)
 
 experiment_description = (
-    "This experiment implements commit 7dc8442 of the Data Understanding document and Data Preparation document."
+"This experiment implements commit 7dc8442 of the Data Understanding document and commit 7bddc87 of Data Preparation document."
 )
 experiment_tags = {
     "mlflow.note.content": experiment_description,
@@ -171,4 +171,4 @@ def analyze_mlflow_run(run_id: str = None, artifact_path: str = None):
 
 if __name__ == "__main__":
     # This main can be used for manual analysis of a specif mlflow run that produced a csv
-    analyze_mlflow_run("b0dc176d6f9c414b9f056783f7d69b4f", "csv")
+    analyze_mlflow_run("", "")

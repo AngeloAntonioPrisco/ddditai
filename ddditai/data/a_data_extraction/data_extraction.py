@@ -178,7 +178,7 @@ artifact_base_folder = local_appdata / "MLflow" / "artifacts"
 artifact_base_folder.mkdir(parents=True, exist_ok=True)
 
 experiment_description = (
-    "This experiment implements commit 7dc8442 of the Data Understanding document and Data Preparation document."
+"This experiment implements commit 7dc8442 of the Data Understanding document and commit 7bddc87 of Data Preparation document."
 )
 experiment_tags = {
     "mlflow.note.content": experiment_description,
