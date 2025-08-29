@@ -21,8 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+            python -m pip install --upgrade pip
+            pip install onnxruntime azure-storage-blob numpy pandas psutil
 
       - name: Run unit tests
         run: pytest --maxfail=1 --disable-warnings -q
@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install onnxruntime azure-storage-blob numpy pandas psutil
 
       - name: Run check models script
         run: python .github/workflows/check_models.py
