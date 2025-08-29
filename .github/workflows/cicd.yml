@@ -57,18 +57,9 @@ jobs:
         id: deploylist
         run: |
           if [ -f deploy_list.txt ]; then
-            echo "Deploy list content:"
-            cat deploy_list.txt
             echo "DEPLOY_MODELS=$(cat deploy_list.txt | xargs)" >> $GITHUB_ENV
-          
             echo "Files to deploy:"
-            for f in $(cat deploy_list.txt); do
-              if [ -f "$f" ]; then
-                echo "  OK: $f"
-              else
-                echo "  MISSING: $f"
-              fi
-            done
+            cat deploy_list.txt
           else
             echo "No deploy list found."
             echo "DEPLOY_MODELS=" >> $GITHUB_ENV
