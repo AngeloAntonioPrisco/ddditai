@@ -1,5 +1,6 @@
 import os
 import mlflow
+import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -170,5 +171,11 @@ def analyze_mlflow_run(run_id: str = None, artifact_path: str = None):
 
 
 if __name__ == "__main__":
-    # This main can be used for manual analysis of a specif mlflow run that produced a csv
-    analyze_mlflow_run("", "")
+    # This main can be used for manual analysis of a specific mlflow run that produced a csv
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run_id", required=True)
+    parser.add_argument("--artifact_path", required=True)
+
+    args = parser.parse_args()
+
+    analyze_mlflow_run(args.run_id, args.artifact_path)

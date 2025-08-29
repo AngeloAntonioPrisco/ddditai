@@ -1,6 +1,7 @@
 import os
-import pandas as pd
 import mlflow
+import argparse
+import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from azure.storage.blob import BlobServiceClient
@@ -83,5 +84,11 @@ def data_cleaning_mlflow_run(run_id: str, artifact_path: str):
         )
 
 if __name__ == "__main__":
-    # This main can be used for manual data cleaning of a specif mlflow run that produced a csv
-    data_cleaning_mlflow_run("", "")
+    # This main can be used for manual data cleaning of a specific mlflow run that produced a csv
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run_id", required=True)
+    parser.add_argument("--artifact_path", required=True)
+
+    args = parser.parse_args()
+
+    data_cleaning_mlflow_run(args.run_id, args.artifact_path)
