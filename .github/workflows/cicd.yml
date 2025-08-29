@@ -72,5 +72,9 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          source: ${{ env.DEPLOY_MODELS }}
-          target: "~/app/models/"
+          source: models/
+          target: ~/app/models/
+          port: 22
+          timeout: 30s
+          command_timeout: 10m
+          overwrite: true
