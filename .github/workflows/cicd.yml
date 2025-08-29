@@ -32,6 +32,8 @@ jobs:
 
   cd:
     runs-on: ubuntu-latest
+    env:
+      AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
     needs: ci
 
     steps:
