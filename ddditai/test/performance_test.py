@@ -1,5 +1,6 @@
 import os
 import time
+import pytest
 import numpy as np
 import onnxruntime as ort
 import psutil
@@ -14,6 +15,11 @@ MODELS_PREFIX = "training/"
 
 LOCAL_MODELS_DIR = "models/"
 
+# Thresholds for performance tests
+MAX_INFERENCE_TIME = 1.0  # seconds
+
+MAX_RAM_USAGE = 700.0     # MB
+
 os.makedirs(LOCAL_MODELS_DIR, exist_ok=True)
 
 def download_latest_models():
@@ -21,7 +27,6 @@ def download_latest_models():
     container_client = blob_service.get_container_client(MODELS_CONTAINER)
 
     all_blobs = [b.name for b in container_client.list_blobs(name_starts_with=MODELS_PREFIX)]
-
     training_folders = set()
     for blob_name in all_blobs:
         parts = blob_name.split("/")
@@ -39,9 +44,7 @@ def download_latest_models():
     if not latest_blobs:
         raise FileNotFoundError(f"No ONNX models found in {latest_folder}.")
 
-    os.makedirs(LOCAL_MODELS_DIR, exist_ok=True)
     downloaded_models = []
-
     for blob_name in latest_blobs:
         local_path = os.path.join(LOCAL_MODELS_DIR, os.path.basename(blob_name))
         with open(local_path, "wb") as f:
@@ -73,25 +76,14 @@ def measure_model_performance(model_path, batch_size=1):
     end_mem = process.memory_info().rss / 1024 ** 2
     mem_used = end_mem - start_mem
 
-    print(f"Model {os.path.basename(model_path)}: time={elapsed_time:.4f}s, RAM usage={mem_used:.2f} MB")
     return elapsed_time, mem_used
 
-def measure_all_models_performance(model_paths, batch_size=1):
-    total_time = 0.0
-    max_ram = 0.0
+# --- PYTEST TESTS ---
+@pytest.mark.parametrize("model_path", download_latest_models())
+def test_model_performance(model_path):
+    elapsed_time, mem_used = measure_model_performance(model_path, batch_size=1)
+    print(f"Model {os.path.basename(model_path)}: time={elapsed_time:.4f}s, RAM={mem_used:.2f} MB")
 
-    for model_path in model_paths:
-        elapsed_time, mem_used = measure_model_performance(model_path, batch_size=batch_size)
-        total_time += elapsed_time
-        if mem_used > max_ram:
-            max_ram = mem_used
-
-    print(f"\nTotal performance for {len(model_paths)} models: total time={total_time:.4f}s, max RAM usage={max_ram:.2f} MB")
-    return total_time, max_ram
-
-def main():
-    models = download_latest_models()
-    measure_all_models_performance(models, batch_size=1)
-
-if __name__ == "__main__":
-    main()
+    # Assertions for CI
+    assert elapsed_time <= MAX_INFERENCE_TIME, f"Inference time too high for {model_path}"
+    assert mem_used <= MAX_RAM_USAGE, f"RAM usage too high for {model_path}"
