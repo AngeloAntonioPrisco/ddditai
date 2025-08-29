@@ -7,7 +7,7 @@ import psutil
 from azure.storage.blob import BlobServiceClient
 
 # --- CONFIGURATION ---
-BLOB_CONNECTION_STRING = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+AZURE_STORAGE_CONNECTION_STRING= os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
 
 MODELS_CONTAINER = "mlflow"
 
@@ -23,7 +23,7 @@ MAX_RAM_USAGE = 700.0     # MB
 os.makedirs(LOCAL_MODELS_DIR, exist_ok=True)
 
 def download_latest_models():
-    blob_service = BlobServiceClient.from_connection_string(BLOB_CONNECTION_STRING)
+    blob_service = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
     container_client = blob_service.get_container_client(MODELS_CONTAINER)
 
     all_blobs = [b.name for b in container_client.list_blobs(name_starts_with=MODELS_PREFIX)]
