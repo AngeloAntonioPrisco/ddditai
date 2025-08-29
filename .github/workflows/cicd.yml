@@ -72,6 +72,7 @@ jobs:
           else
             echo "No deploy list found."
             echo "DEPLOY_MODELS=" >> $GITHUB_ENV
+          fi
 
       - name: Deploy models to VM
         if: env.DEPLOY_MODELS != ''
