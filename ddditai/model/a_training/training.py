@@ -56,9 +56,11 @@ def training_mlflow_run(run_id: str, artifact_path: str):
     run_name = f"Model_from_{run_id or 'manual'}_{timestamp}"
 
     run_folder = artifact_base_folder / run_name
+    results_folder = run_folder / "results"
     models_folder = run_folder / "models"
 
     models_folder.mkdir(parents=True, exist_ok=True)
+    results_folder.mkdir(parents=True, exist_ok=True)
 
     print(f"Loaded dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 
@@ -129,13 +131,32 @@ def training_mlflow_run(run_id: str, artifact_path: str):
             mlflow.log_artifact(str(onnx_file_path), artifact_path="models")
             print(f"Saved ONNX model in: {onnx_file_path}\n")
 
+            # Results
+            results_df = pd.DataFrame([{
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1
+            }])
+
+            csv_path = os.path.join(results_folder, f"results_{tag}.csv")
+            print(f"Saving results: {csv_path}")
+            results_df.to_csv(csv_path, index=False)
+
+            mlflow.log_artifact(csv_path, artifact_path="results")
+
             # Upload on Azure Blob Storage
             if AZURE_CONNECTION_STRING:
                 blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
                 container_client = blob_service_client.get_container_client(AZURE_CONTAINER_NAME)
                 container_client.upload_blob(
-                    name=f"training/Training_{timestamp}/xgb_model_{tag}.onnx",
+                    name=f"training/Training_{timestamp}/models/xgb_model_{tag}.onnx",
                     data=open(onnx_file_path, "rb"),
+                    overwrite=True
+                )
+                container_client.upload_blob(
+                    name=f"training/Training_{timestamp}/results/results_{tag}.csv",
+                    data=open(csv_path, "rb"),
                     overwrite=True
                 )
 
