@@ -26,14 +26,6 @@ PAUSE_DURATION = 90  # seconds
 
 SEARCH_TAGS = ["lowpoly", "highpoly", "prop", "character", "environment", "weapon", "realistic", "stylized"]
 
-# ATTENTION: at the moment mlflow run locally, if moved on a VM or external server make sure to change the path
-local_appdata = Path(os.environ['LOCALAPPDATA'])
-data_folder = local_appdata / "MLflow" / "data_extraction"
-data_folder.mkdir(parents=True, exist_ok=True)
-BASE_DIR = data_folder
-
-os.makedirs(BASE_DIR, exist_ok=True)
-
 AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 
 AZURE_CONTAINER_NAME = os.getenv("AZURE_CONTAINER_NAME", "mlflow")
@@ -44,6 +36,8 @@ TOKENS = [
     os.getenv("SKETCHFAB_TOKEN_3"),
     os.getenv("SKETCHFAB_TOKEN_4")
 ]
+
+requests_count = [0,0,0,0] # A request count per thread
 
 # --- REQUEST FUNCTIONS ---
 def now():
@@ -76,11 +70,20 @@ def request_with_backoff(url, params=None, headers=None, max_retries=10):
     return requests.Response()
 
 def fetch_model_data(uid, token, thread_name="Thread"):
+    global requests_count
     headers = {"Authorization": f"Token {token}"}
     url = f"{API_BASE}/models/{uid}"
     time.sleep(PAUSE_BETWEEN_REQUESTS)
     try:
         resp = request_with_backoff(url, headers=headers)
+        thread_num = int(thread_name.split("-")[1])
+        idx = thread_num - 1
+        requests_count[idx] += 1
+        print(f"[{now()}] [{thread_name}] Requests count up to {requests_count} requests")
+        if requests_count[idx] % PAUSE_EVERY_N_REQUESTS == 0:
+            print(f"[{now()}] [{thread_name}] Pause of {PAUSE_DURATION} sec after {requests_count} requests")
+            time.sleep(PAUSE_DURATION)
+
         if resp.status_code != 200:
             return None, None
         data = resp.json()
@@ -107,17 +110,21 @@ def fetch_model_data(uid, token, thread_name="Thread"):
         return None, None
 
 def fetch_model_uids(tag, total_models, token, thread_name="Thread"):
+    global requests_count
     uids = []
     offset = 0
-    requests_count = 0
     headers = {"Authorization": f"Token {token}"}
     while len(uids) < total_models:
         params = {"tags": tag, "limit": BATCH_SIZE, "offset": offset}
         resp = request_with_backoff(f"{API_BASE}/models", params=params, headers=headers)
-        requests_count += 1
-        if requests_count % PAUSE_EVERY_N_REQUESTS == 0:
-            print(f"[{now()}] [{thread_name}] Pause of {PAUSE_DURATION} sec after {requests_count} requests for tag '{tag}'")
+        thread_num = int(thread_name.split("-")[1])
+        idx = thread_num - 1
+        requests_count[idx] += 1
+        print(f"[{now()}] [{thread_name}] Requests count up to {requests_count} requests")
+        if requests_count[idx] % PAUSE_EVERY_N_REQUESTS == 0:
+            print(f"[{now()}] [{thread_name}] Pause of {PAUSE_DURATION} sec after {requests_count} requests")
             time.sleep(PAUSE_DURATION)
+
         if resp.status_code != 200:
             break
         results = resp.json().get("results", [])
@@ -146,7 +153,7 @@ def worker_thread(thread_tags, token, thread_name):
 
     for tag in thread_tags:
         print(f"[{now()}] [{thread_name}] Starting collection of UID for tag '{tag}'")
-        model_uids = fetch_model_uids(tag, TOTAL_MODELS_PER_TAG // MAX_WORKERS, token, thread_name=thread_name)
+        model_uids = fetch_model_uids(tag, TOTAL_MODELS_PER_TAG, token, thread_name=thread_name)
         total_models_tag = len(model_uids)
         print(f"[{now()}] [{thread_name}] Collected {total_models_tag} UID for tag '{tag}'")
 
@@ -159,17 +166,48 @@ def worker_thread(thread_tags, token, thread_name):
     print(f"[{end_time}] [{thread_name}] terminated")
     return thread_results
 
-# --- MAIN MLRUN PIPELINE ---
-with mlflow.start_run(run_name="Sketchfab_Data") as run:
-    run_name = run.info.run_name
-    run_id = run.info.run_id
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    timestamp_start = datetime.now()
-    run_folder = os.path.join(BASE_DIR, f"{run_name}_{timestamp}")
-    os.makedirs(run_folder, exist_ok=True)
+# --- MAIN MLFLOW PIPELINE ---
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+EXPERIMENT_NAME = "Sketchfab_Experiment"
 
-    csv_path = os.path.join(run_folder, "sketchfab_models.csv")
-    txt_path = os.path.join(run_folder, "sketchfab_authors.txt")
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
+
+# ATTENTION: at the moment mlflow run locally, if moved on a VM or external server make sure to change the path
+local_appdata = Path(os.environ['LOCALAPPDATA'])
+artifact_base_folder = local_appdata / "MLflow" / "artifacts"
+artifact_base_folder.mkdir(parents=True, exist_ok=True)
+
+experiment_description = (
+    "This experiment implements commit 7dc8442 of the Data Understanding document and Data Preparation document."
+)
+experiment_tags = {
+    "mlflow.note.content": experiment_description,
+}
+
+if not mlflow.get_experiment_by_name(EXPERIMENT_NAME):
+    mlflow.create_experiment(
+        name=EXPERIMENT_NAME,
+        artifact_location=f"file:///{artifact_base_folder.resolve().as_posix()}",
+        tags=experiment_tags
+    )
+
+mlflow.set_experiment(EXPERIMENT_NAME)
+
+run_name = f"Data_Extraction_{timestamp}"
+
+with mlflow.start_run(run_name=run_name) as run:
+    run_id = run.info.run_id
+    print(f"Run ID: {run_id}")
+
+    run_folder = artifact_base_folder / run_id
+    csv_folder = run_folder / "sketchfab_models_data"
+    txt_folder = run_folder / "credits"
+
+    csv_folder.mkdir(parents=True, exist_ok=True)
+    txt_folder.mkdir(parents=True, exist_ok=True)
+
+    csv_path = csv_folder / "sketchfab_models.csv"
+    txt_path = txt_folder / "sketchfab_authors.txt"
 
     mlflow.log_param("tags", str(SEARCH_TAGS))
     mlflow.log_param("total_models_per_tag", TOTAL_MODELS_PER_TAG)
@@ -207,8 +245,11 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
         "user_tags", "user_categories", "face_count"
     ])
     df.to_csv(csv_path, index=False)
-    mlflow.log_artifact(csv_path, artifact_path="sketchfab_models.csv")
 
+    mlflow.log_artifact(str(csv_path), artifact_path="csv")
+    mlflow.log_artifact(str(txt_path), artifact_path="txt")
+
+    timestamp_start = datetime.now()
     timestamp_end = datetime.now()
     delta = timestamp_end - timestamp_start
     total_seconds = int(delta.total_seconds())
@@ -223,16 +264,16 @@ with mlflow.start_run(run_name="Sketchfab_Data") as run:
         try:
             blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
             container_client = blob_service_client.get_container_client(AZURE_CONTAINER_NAME)
-            with open(csv_path, "rb") as data:
-                container_client.upload_blob(
-                    name=f"{run_name}_{timestamp}/sketchfab_models.csv", data=data, overwrite=True
-                )
-            with open(txt_path, "rb") as data:
-                container_client.upload_blob(
-                    name=f"{run_name}_{timestamp}/sketchfab_authors.txt", data=data, overwrite=True
-                )
-            print(f"[{now()}] CSV and TXT uploaded to '{AZURE_CONTAINER_NAME}' Azure container")
-        except Exception as e:
-            print(f"[{now()}] Error during Azure uploading : {e}")
 
-analyze_mlflow_run(run_id, "sketchfab_models.csv")
+            for file_path, subfolder in [(csv_path, "data_extraction/csv"), (txt_path, "data_extraction/txt")]:
+                blob_name = f"{EXPERIMENT_NAME}/{run_id}/{subfolder}/{file_path.name}"
+                with open(file_path, "rb") as data:
+                    container_client.upload_blob(name=blob_name, data=data, overwrite=True)
+            print(f"[{datetime.now()}] CSV and TXT uploaded to '{AZURE_CONTAINER_NAME}' Azure container")
+        except Exception as e:
+            print(f"[{datetime.now()}] Error during Azure uploading : {e}")
+
+if mlflow.active_run():
+    mlflow.end_run()
+
+analyze_mlflow_run(run_id, "csv")
