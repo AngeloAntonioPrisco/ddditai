@@ -9,42 +9,57 @@ from pathlib import Path
 from datetime import datetime
 from scipy.stats import f_oneway, chi2_contingency
 from statsmodels.formula.api import ols
+from ddditai.data.c_data_preparation.a_data_cleaning.data_cleaning import data_cleaning_mlflow_run
 
-# --- CONFIGURATION ---
-local_appdata = Path(os.environ["LOCALAPPDATA"])
-data_folder = local_appdata / "MLflow" / "data_analysis"
-data_folder.mkdir(parents=True, exist_ok=True)
-BASE_DIR = data_folder
 
-# --- OUTLIERS DETECTION FUNCTION ---
-def detect_outliers_iqr(series: pd.Series):
-    Q1 = series.quantile(0.25)
-    Q3 = series.quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
+# --- OUTLIERS DETECTION FUNCTION (IQR) ---
+def detect_outliers_iqr(series):
+    q1 = series.quantile(0.25)
+    q3 = series.quantile(0.75)
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
     return (series < lower) | (series > upper)
 
-# --- MAIN MLRUN PIPELINE ---
-def analyze_mlflow_run(run_id: str, artifact_path: str):
-    # Download artifact
-    artifact_local_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_path)
-    if os.path.isdir(artifact_local_path):
-        csv_files = [f for f in os.listdir(artifact_local_path) if f.endswith(".csv")]
-        if not csv_files:
-            raise FileNotFoundError("No CSV found in artifacts directory")
-        csv_path = os.path.join(artifact_local_path, csv_files[0])
-    else:
-        if not artifact_local_path.endswith(".csv"):
-            raise FileNotFoundError(f"Expected CSV, got {artifact_local_path}")
-        csv_path = artifact_local_path
+# --- MAIN MLFLOW PIPELINE ---
+EXPERIMENT_NAME = "Sketchfab_Experiment"
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 
-    df = pd.read_csv(csv_path)
+# ATTENTION: at the moment mlflow run locally, if moved on a VM or external server make sure to change the path
+local_appdata = Path(os.environ['LOCALAPPDATA'])
+artifact_base_folder = local_appdata / "MLflow" / "artifacts"
+artifact_base_folder.mkdir(parents=True, exist_ok=True)
+
+experiment_description = (
+    "This experiment implements commit 7dc8442 of the Data Understanding document and Data Preparation document."
+)
+experiment_tags = {
+    "mlflow.note.content": experiment_description,
+}
+
+if not mlflow.get_experiment_by_name(EXPERIMENT_NAME):
+    mlflow.create_experiment(
+        name=EXPERIMENT_NAME,
+        artifact_location=f"file:///{artifact_base_folder.resolve().as_posix()}",
+        tags=experiment_tags
+    )
+
+mlflow.set_experiment(EXPERIMENT_NAME)
+
+def analyze_mlflow_run(run_id: str = None, artifact_path: str = None):
+    artifact_local_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_path)
+    csv_files = [f for f in os.listdir(artifact_local_path) if f.endswith(".csv")]
+    if not csv_files:
+        raise FileNotFoundError("No CSV found in artifact folder")
+    csv_file_path = os.path.join(artifact_local_path, csv_files[0])
+    df = pd.read_csv(csv_file_path)
 
     # Create run specific folder
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    run_folder = BASE_DIR / f"Data_Analysis_from_{run_id}_{timestamp}"
-    csv_folder = run_folder / "csv"
+    run_name = f"Analysis_from_{run_id or 'manual'}_{timestamp}"
+
+    run_folder = artifact_base_folder / run_name
+    csv_folder = run_folder / "analysis_results"
     plots_folder = run_folder / "plots"
     hist_folder = plots_folder / "histograms"
     box_folder = plots_folder / "boxplots"
@@ -141,12 +156,19 @@ def analyze_mlflow_run(run_id: str, artifact_path: str):
     missing_report.to_csv(csv_folder / "missing_report.csv")
     print("Missing values report saved")
 
-    with mlflow.start_run(run_name=f"Data_Analysis_from_{run_id}"):
-        mlflow.log_artifact(str(run_folder))
+    with mlflow.start_run(run_name=run_name) as run:
+        mlflow.log_artifact(str(csv_folder))
+        mlflow.log_artifact(str(box_folder))
+        mlflow.log_artifact(str(hist_folder))
+        print(f"Run ID: {run.info.run_id} - Analysis artifacts logged successfully.")
+        print(f"Analysis completed. Files saved in: {run_folder}")
 
-    print(f"Analysis completed. Files saved in: {run_folder}")
+        if mlflow.active_run():
+            mlflow.end_run()
+
+        data_cleaning_mlflow_run(run_id, artifact_path)
 
 
 if __name__ == "__main__":
     # This main can be used for manual analysis of a specif mlflow run that produced a csv
-    analyze_mlflow_run("","")
+    analyze_mlflow_run("b0dc176d6f9c414b9f056783f7d69b4f", "csv")
