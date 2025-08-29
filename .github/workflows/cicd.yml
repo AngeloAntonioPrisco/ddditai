@@ -21,10 +21,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-            python -m pip install --upgrade pip
-            pip install onnxruntime azure-storage-blob numpy pandas psutil pytest
+          python -m pip install --upgrade pip
+          python -m pip install onnxruntime azure-storage-blob numpy pandas psutil pytest
 
-      - name: Run unit tests
+      - name: Run performance tests
+        working-directory: ddditai/test
         run: pytest --maxfail=1 --disable-warnings -q
 
       - name: Run performance tests
