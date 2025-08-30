@@ -81,4 +81,4 @@ jobs:
 
       - name: Trigger AI reload endpoint
         run: |
-          curl -X POST http://${{ secrets.AZURE_VM_HOST }}:8080/ai/reload
+          curl -s --fail -X GET http://${{ secrets.AZURE_VM_HOST }}:8080/ai/reload
