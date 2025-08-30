@@ -124,7 +124,13 @@ def training_mlflow_run(run_id: str, artifact_path: str):
 
             # Export in ONNX
             initial_type = [('float_input', FloatTensorType([None, X_train.shape[1]]))]
-            onnx_model = onnxmltools.convert_xgboost(model, initial_types=initial_type)
+
+            onnx_model = onnxmltools.convert_xgboost(
+                model,
+                initial_types=initial_type,
+                target_opset=14
+            )
+
             onnx_file_path = os.path.join(models_folder, f"xgb_model_{tag}.onnx")
             onnxmltools.utils.save_model(onnx_model, onnx_file_path)
 
