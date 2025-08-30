@@ -78,3 +78,7 @@ jobs:
           timeout: 30s
           command_timeout: 10m
           overwrite: true
+
+      - name: Trigger AI reload endpoint
+        run: |
+          curl -X POST http://${{ secrets.AZURE_VM_HOST }}:8080/ai/reload
