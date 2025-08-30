@@ -9,12 +9,12 @@ This section documents the modeling process for Dddit AI.
 It describes the choice of algorithms, modeling techniques,
 and the procedures used to create predictive models.
 The goal is to transform the prepared dataset into trained machine
-learning models that can distinguish between different `associated_tag`
+learning models that can distinguish between different `associated tag`
 values (e.g., realistic vs stylized).
 
 **Objectives:**  
 - Select appropriate modeling techniques for categorical classification.  
-- Train one classifier per `associated_tag` (one-vs-rest approach).  
+- Train one classifier per `associated tag` (one-vs-rest approach).  
 - Ensure robustness against class imbalance through resampling.  
 - Export models in ONNX format for deployment.  
 - Maintain reproducibility by logging all artifacts in MLflow.
@@ -57,7 +57,7 @@ and providing a clear reference for future iterations or extensions of the proje
 
 **Assumptions:**  
 - Input data has been cleaned and features engineered during the **Data Preparation** stage.  
-- Each sample is associated with exactly one `associated_tag`.  
+- Each sample is associated with exactly one `associated tag`.  
 - Dataset is stratified to ensure consistent class distribution during training/testing.  
 
 **Constraints:**  
@@ -76,7 +76,7 @@ history of the building process.
 Define a guide to follow in order to reach a result that can be evaluated in all aspects.
 
 - **Steps:**  
-1. For each `associated_tag`, a binary classification dataset is built (`tag` vs `not tag`).  
+1. For each `associated tag`, a binary classification dataset is built (`tag` vs `not tag`).  
 2. Feature selection: exclude identifiers (`uid`, `associated_tag`, `target`) and use all remaining features.  
 3. Features are renamed to `f0, f1, … fn` for consistency.  
 4. Dataset is split into training and testing sets (80/20, stratified).  
@@ -95,6 +95,15 @@ results of evaluation processes.
 **Evaluation Metrics:**  
 - **Accuracy** (overall correctness).  
 - **Classification Report** (precision, recall, F1-score).
+
+After a phase of beta testing, several issues emerged that were not
+detected during the development stages. 
+Some features cannot be provided as input at prediction time,
+such as `vertex_count_scaled` and `material_count_scaled`. The exported model does
+not allow retrieving the prediction confidence on the server side,
+making it impossible to use thresholds to trigger performance degradation signals. 
+In production, the model predicts only the `character` and `environment` tags, 
+making it of limited use for achieving the intended business objectives.
 
 ## 6. Model Export and Deployment
 
