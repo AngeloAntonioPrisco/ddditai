@@ -105,6 +105,9 @@ making it impossible to use thresholds to trigger performance degradation signal
 In production, the model predicts only the `character` and `environment` tags, 
 making it of limited use for achieving the intended business objectives.
 
+From further investigations emerged that the entire classification process is completed in 1/2 ms and that the peak RAM recorded
+is less than 5 MB, this means that there is the possibility of using more complex models and still falling within the limits defined in the business understanding document.
+
 ## 6. Model Export and Deployment
 
 **Section Description:**  
